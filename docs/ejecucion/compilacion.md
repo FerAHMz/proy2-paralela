@@ -39,3 +39,16 @@ Probando `tryKey` por separado encontramos tres errores en el código:
 3. **Solo se cifran 16 bytes.** `ecb_crypt` recibe `16` fijo en lugar de `len`, por lo que solo se cifran los primeros dos bloques. El resto del texto queda en claro dentro del "cifrado".
 
 Además, `ciphlen = strlen(eltexto)` no es múltiplo de 8, que es lo que requiere DES en modo ECB.
+
+## Versión corregida
+
+Para las mediciones usamos [`src/bruteforce_texto.c`](../../src/bruteforce_texto.c), que conserva la misma estrategia de distribución del original (rango `[0, 2^56)` dividido en `N` bloques contiguos, aviso con `MPI_Send` e `MPI_Irecv`/`MPI_Test`) pero:
+
+- usa las funciones corregidas de [`src/des_util.h`](../../src/des_util.h) (`0xFEL` y `len` en `ecb_crypt`),
+- lee el texto cifrado de un archivo y recibe la frase clave como argumento,
+- mide el tiempo de búsqueda con `MPI_Wtime` (entre un `MPI_Barrier` inicial y el momento en que el proceso 0 recibe la llave).
+
+```bash
+make
+mpirun -np 4 ./bruteforce_texto ../datos/texto_cifrado.bin "computación paralela y distribuida"
+```
