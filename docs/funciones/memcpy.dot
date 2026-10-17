@@ -1,0 +1,41 @@
+// Tarea 5.3 — memcpy(dest, src, n)
+// Render: dot -Tpng -Gdpi=200 memcpy.dot -o memcpy.png && dot -Tsvg memcpy.dot -o memcpy.svg
+digraph Memcpy {
+  graph [rankdir=TB, fontname="Helvetica", fontsize=12, nodesep=0.4, ranksep=0.35, newrank=true,
+         label="memcpy(void *dest, const void *src, size_t n)", labelloc=t, fontsize=16];
+  node  [fontname="Helvetica", fontsize=11, shape=box, style="rounded,filled", fillcolor="#eef3fb", color="#3b5b92"];
+  edge  [fontname="Helvetica", fontsize=10, color="#3b5b92"];
+
+  subgraph cluster_main {
+    label="Flujo (comportamiento equivalente byte a byte)"; color="#3b5b92"; style=rounded;
+    inicio  [label="Inicio", shape=oval, fillcolor="#d7e4f7"];
+    entrada [label="Entrada:\ndest (destino), src (origen)\nn (número de bytes)", shape=parallelogram];
+    cast    [label="d = (unsigned char *) dest\ns = (const unsigned char *) src\n(se trabaja byte por byte, sin importar el tipo)"];
+    i0      [label="i = 0"];
+    cond    [label="¿i < n?", shape=diamond, fillcolor="#fde2e2", color="#a33"];
+    copia   [label="d[i] = s[i]", fillcolor="#fff4d6", color="#b08400"];
+    inc     [label="i = i + 1"];
+    salida  [label="return dest", shape=parallelogram];
+    fin     [label="Fin", shape=oval, fillcolor="#d7e4f7"];
+
+    inicio -> entrada -> cast -> i0 -> cond;
+    cond -> copia [label=" Sí"];
+    copia -> inc -> cond;
+    cond -> salida [label=" No"];
+    salida -> fin;
+  }
+
+  mem [shape=plain, style="", label=<
+    <table border="0" cellborder="1" cellspacing="0" cellpadding="4" bgcolor="#ffffff">
+      <tr><td colspan="7" bgcolor="#e6f4ea"><b>En tryKey: memcpy(temp, ciph, len)</b></td></tr>
+      <tr><td><b>ciph</b></td><td>4b</td><td>cb</td><td>99</td><td>…</td><td>(len bytes)</td><td></td></tr>
+      <tr><td><b>temp</b></td><td>4b</td><td>cb</td><td>99</td><td>…</td><td>(len bytes)</td><td>?</td></tr>
+      <tr><td colspan="7" align="left">memcpy copia exactamente len bytes, sin detenerse en los \0<br/>(a diferencia de strcpy). El byte temp[len] no lo toca:<br/>tryKey lo pone en 0 después.</td></tr>
+    </table>>];
+
+  nota [shape=note, fillcolor="#f3f3f3", color="#777",
+        label="• Copia bytes crudos: sirve para el texto cifrado, que puede tener bytes 0.\n• No revisa tamaños: dest debe tener espacio para n bytes.\n• Si dest y src se traslapan el resultado no está definido (para eso existe memmove).\n• Las implementaciones reales copian de 8 o 16 bytes a la vez (palabras o SIMD),\n   pero el resultado es el mismo que este ciclo.\n• En bruteforce.c se usa en main (eltexto → cipher) y en tryKey (ciph → temp)."];
+
+  copia -> mem [style=dashed, color="#2e7d4f", constraint=false];
+  fin -> nota [style=invis];
+}

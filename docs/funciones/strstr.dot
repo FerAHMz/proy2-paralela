@@ -1,0 +1,56 @@
+// Tarea 5.4 — strstr(haystack, needle)
+// Render: dot -Tpng -Gdpi=200 strstr.dot -o strstr.png && dot -Tsvg strstr.dot -o strstr.svg
+digraph Strstr {
+  graph [rankdir=TB, fontname="Helvetica", fontsize=12, nodesep=0.4, ranksep=0.35, newrank=true,
+         label="strstr(const char *haystack, const char *needle)", labelloc=t, fontsize=16];
+  node  [fontname="Helvetica", fontsize=11, shape=box, style="rounded,filled", fillcolor="#eef3fb", color="#3b5b92"];
+  edge  [fontname="Helvetica", fontsize=10, color="#3b5b92"];
+
+  subgraph cluster_main {
+    label="Flujo (algoritmo ingenuo, comportamiento equivalente)"; color="#3b5b92"; style=rounded;
+    inicio  [label="Inicio", shape=oval, fillcolor="#d7e4f7"];
+    entrada [label="Entrada:\nhaystack (texto donde se busca)\nneedle (frase a buscar)", shape=parallelogram];
+    vacia   [label="¿needle[0] == '\\0'?", shape=diamond, fillcolor="#fde2e2", color="#a33"];
+    rhay    [label="return haystack", shape=parallelogram];
+    i0      [label="i = 0"];
+    fintxt  [label="¿haystack[i] == '\\0'?", shape=diamond, fillcolor="#fde2e2", color="#a33"];
+    j0      [label="j = 0"];
+    comp    [label="¿needle[j] != '\\0'  y\nhaystack[i+j] == needle[j]?", shape=diamond, fillcolor="#fff4d6", color="#b08400"];
+    incj    [label="j = j + 1"];
+    full    [label="¿needle[j] == '\\0'?\n(se comparó la frase completa)", shape=diamond, fillcolor="#fde2e2", color="#a33"];
+    rpos    [label="return &haystack[i]\n(puntero a la coincidencia)", shape=parallelogram, fillcolor="#e6f4ea", color="#2e7d4f"];
+    inci    [label="i = i + 1\n(siguiente posición de inicio)"];
+    rnull   [label="return NULL\n(no aparece)", shape=parallelogram, fillcolor="#fde2e2", color="#a33"];
+    fin     [label="Fin", shape=oval, fillcolor="#d7e4f7"];
+
+    inicio -> entrada -> vacia;
+    vacia -> rhay [label=" Sí"];
+    vacia -> i0 [label=" No"];
+    i0 -> fintxt;
+    fintxt -> rnull [label=" Sí"];
+    fintxt -> j0 [label=" No"];
+    j0 -> comp;
+    comp -> incj [label=" Sí"];
+    incj -> comp;
+    comp -> full [label=" No"];
+    full -> rpos [label=" Sí"];
+    full -> inci [label=" No"];
+    inci -> fintxt;
+    rhay -> fin; rpos -> fin; rnull -> fin;
+  }
+
+  ej [shape=plain, style="", label=<
+    <table border="0" cellborder="1" cellspacing="0" cellpadding="4" bgcolor="#ffffff">
+      <tr><td colspan="3" bgcolor="#e6f4ea"><b>Ejemplos en tryKey</b></td></tr>
+      <tr><td><b>temp (descifrado)</b></td><td><b>needle</b></td><td><b>resultado</b></td></tr>
+      <tr><td>"…En el curso de computación paralela y distribuida hemos…"</td><td>"computación paralela y distribuida"</td><td>puntero ≠ NULL → llave correcta</td></tr>
+      <tr><td>11 e8 e4 55 14 c7 54 25 … (llave 0)</td><td>"computación paralela y distribuida"</td><td>NULL → probar otra</td></tr>
+      <tr><td>"…equipos de 3 integrantes (los mismos del proyecto 1), deben…"</td><td>" los mismos del proyecto 1 "</td><td>NULL: el texto tiene "(" y ")",<br/>no espacios (error del original)</td></tr>
+    </table>>];
+
+  nota [shape=note, fillcolor="#f3f3f3", color="#777",
+        label="• Se detiene en el primer '\\0' de haystack: si un descifrado incorrecto produce un byte 0,\n   el resto del texto ya no se revisa (para una llave incorrecta da igual, igual devuelve NULL).\n• Distingue mayúsculas, espacios y acentos: la frase debe estar escrita exactamente igual.\n• Peor caso O(n·m), con n = largo del texto y m = largo de la frase. Con una llave incorrecta\n   casi siempre falla en el primer carácter, así que en la práctica es ~O(n)."];
+
+  comp -> ej [style=dashed, color="#2e7d4f", constraint=false];
+  fin -> nota [style=invis];
+}
