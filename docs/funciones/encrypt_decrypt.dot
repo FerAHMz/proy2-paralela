@@ -1,0 +1,52 @@
+// Tarea 5.1 — decrypt(key, *ciph, len) y encrypt(key, *ciph, len) de bruteforce.c
+// Render: dot -Tpng -Gdpi=200 encrypt_decrypt.dot -o encrypt_decrypt.png && dot -Tsvg encrypt_decrypt.dot -o encrypt_decrypt.svg
+digraph EncryptDecrypt {
+  graph [rankdir=TB, fontname="Helvetica", fontsize=12, nodesep=0.4, ranksep=0.35, newrank=true,
+         label="decrypt(key, *ciph, len) / encrypt(key, *ciph, len)", labelloc=t, fontsize=16];
+  node  [fontname="Helvetica", fontsize=11, shape=box, style="rounded,filled", fillcolor="#eef3fb", color="#3b5b92"];
+  edge  [fontname="Helvetica", fontsize=10, color="#3b5b92"];
+
+  // ---------------- Flujo de la función ----------------
+  subgraph cluster_main {
+    label="Flujo (idéntico en ambas, solo cambia el modo de ecb_crypt)"; color="#3b5b92"; style=rounded;
+    inicio  [label="Inicio", shape=oval, fillcolor="#d7e4f7"];
+    entrada [label="Entrada:\nkey (long, 56 bits útiles)\nciph (puntero al buffer)\nlen (bytes)", shape=parallelogram];
+    k0      [label="k = 0\ni = 0"];
+    shift   [label="key <<= 1\n(desplaza la llave 1 bit a la izquierda)"];
+    mask    [label="k += key & (0xFE << i*8)\n(copia 7 bits de key al byte i de k,\ndejando libre el bit 0 de ese byte)", fillcolor="#fff4d6", color="#b08400"];
+    cond    [label="¿i < 8?", shape=diamond, fillcolor="#fde2e2", color="#a33"];
+    inc     [label="i = i + 1"];
+    parity  [label="des_setparity((char *)&k)\nbit 0 de cada byte = paridad impar\n→ llave DES válida de 64 bits"];
+    modo    [label="¿encrypt o decrypt?", shape=diamond, fillcolor="#fde2e2", color="#a33"];
+    enc     [label="ecb_crypt(&k, ciph, 16, DES_ENCRYPT)"];
+    dec     [label="ecb_crypt(&k, ciph, 16, DES_DECRYPT)"];
+    ecb     [label="ecb_crypt: por cada bloque de 8 bytes\naplica DES (16 rondas de Feistel)\nsobre el mismo buffer (in place)", fillcolor="#e6f4ea", color="#2e7d4f"];
+    salida  [label="Salida: ciph queda cifrado / descifrado\n(no retorna nada, modifica el buffer)", shape=parallelogram];
+    fin     [label="Fin", shape=oval, fillcolor="#d7e4f7"];
+
+    inicio -> entrada -> k0 -> cond;
+    cond -> shift [label=" Sí"];
+    shift -> mask -> inc -> cond;
+    cond -> parity [label=" No"];
+    parity -> modo;
+    modo -> enc [label=" encrypt"];
+    modo -> dec [label=" decrypt"];
+    enc -> ecb; dec -> ecb;
+    ecb -> salida -> fin;
+  }
+
+  // ---------------- Cómo queda k ----------------
+  bits [shape=plain, style="", label=<
+    <table border="0" cellborder="1" cellspacing="0" cellpadding="4" bgcolor="#ffffff">
+      <tr><td colspan="8" bgcolor="#e6f4ea"><b>Empaquetado de la llave en k (8 bytes)</b></td></tr>
+      <tr><td>byte 7</td><td>byte 6</td><td>byte 5</td><td>byte 4</td><td>byte 3</td><td>byte 2</td><td>byte 1</td><td>byte 0</td></tr>
+      <tr><td>bits 49–55<br/>+ p</td><td>bits 42–48<br/>+ p</td><td>bits 35–41<br/>+ p</td><td>bits 28–34<br/>+ p</td><td>bits 21–27<br/>+ p</td><td>bits 14–20<br/>+ p</td><td>bits 7–13<br/>+ p</td><td>bits 0–6<br/>+ p</td></tr>
+      <tr><td colspan="8" align="left">En la iteración i, key ya se desplazó i+1 bits, así que sus bits 7i…7i+6<br/>caen en las posiciones 8i+1…8i+7. La máscara 0xFE &lt;&lt; i*8 los toma y deja el bit 8i (p) libre.</td></tr>
+    </table>>];
+
+  nota [shape=note, fillcolor="#fde2e2", color="#a33", style="filled",
+        label="Errores del original:\n• 0xFE es int: para i ≥ 4 el desplazamiento es ≥ 32 bits (comportamiento indefinido)\n   y para i = 3 la máscara sale negativa. Con -O2 todas las llaves dan la misma k.\n   Corrección: 0xFEL.\n• ecb_crypt recibe 16 fijo: solo procesa los primeros 2 bloques\n   aunque len sea mayor. Corrección: pasar len (múltiplo de 8)."];
+
+  mask -> bits [style=dashed, color="#2e7d4f", constraint=false];
+  fin -> nota [style=invis];
+}

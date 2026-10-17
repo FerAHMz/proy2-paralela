@@ -1,0 +1,51 @@
+// Tarea 5 — Cómo se usan las funciones dentro de main() de bruteforce.c
+// Render: dot -Tpng -Gdpi=200 programa.dot -o programa.png && dot -Tsvg programa.dot -o programa.svg
+digraph Programa {
+  graph [rankdir=TB, fontname="Helvetica", fontsize=12, nodesep=0.4, ranksep=0.35, newrank=true,
+         label="main() de bruteforce.c: búsqueda distribuida con MPI", labelloc=t, fontsize=16];
+  node  [fontname="Helvetica", fontsize=11, shape=box, style="rounded,filled", fillcolor="#eef3fb", color="#3b5b92"];
+  edge  [fontname="Helvetica", fontsize=10, color="#3b5b92"];
+
+  subgraph cluster_main {
+    label="Cada proceso (rank = id)"; color="#3b5b92"; style=rounded;
+    inicio  [label="Inicio", shape=oval, fillcolor="#d7e4f7"];
+    prep    [label="ciphlen = strlen(eltexto)\nmemcpy(cipher, eltexto, ciphlen)\nencrypt(the_key, cipher)", fillcolor="#e6f4ea", color="#2e7d4f"];
+    init    [label="MPI_Init\nMPI_Comm_size → N\nMPI_Comm_rank → id"];
+    rango   [label="range_per_node = 2^56 / N\nmylower = range_per_node · id\nmyupper = range_per_node · (id+1) − 1\n(el último proceso llega hasta 2^56)"];
+    irecv   [label="MPI_Irecv(&found, ANY_SOURCE)\n(recepción no bloqueante del aviso)"];
+    i0      [label="i = mylower"];
+    fin_r   [label="¿i < myupper?", shape=diamond, fillcolor="#fde2e2", color="#a33"];
+    test    [label="MPI_Test(&req, &ready)\n¿otro proceso ya la encontró?", shape=diamond, fillcolor="#fde2e2", color="#a33"];
+    try     [label="tryKey(i, cipher, ciphlen)", shape=diamond, fillcolor="#fff4d6", color="#b08400"];
+    inc     [label="i = i + 1"];
+    send    [label="found = i\nMPI_Send(&found) a todos los nodos\n(incluido él mismo)"];
+    esraiz  [label="¿id == 0?", shape=diamond, fillcolor="#fde2e2", color="#a33"];
+    wait    [label="MPI_Wait(&req)\n(espera a que llegue found)"];
+    dec     [label="decrypt(found, cipher, ciphlen)\nprintf llave y texto", fillcolor="#e6f4ea", color="#2e7d4f"];
+    final   [label="MPI_Finalize"];
+    fin     [label="Fin", shape=oval, fillcolor="#d7e4f7"];
+
+    inicio -> prep -> init -> rango -> irecv -> i0 -> fin_r;
+    fin_r -> test [label=" Sí"];
+    test -> try [label=" No"];
+    try -> inc [label=" 0"];
+    inc -> fin_r;
+    try -> send [label=" 1"];
+    test -> esraiz [label=" Sí"];
+    fin_r -> esraiz [label=" No"];
+    send -> esraiz;
+    esraiz -> wait [label=" Sí"];
+    wait -> dec -> final;
+    esraiz -> final [label=" No"];
+    final -> fin;
+  }
+
+  reparto [shape=plain, style="", label=<
+    <table border="0" cellborder="1" cellspacing="0" cellpadding="4" bgcolor="#ffffff">
+      <tr><td colspan="4" bgcolor="#e6f4ea"><b>Reparto del espacio de llaves con N = 4</b></td></tr>
+      <tr><td>rank 0</td><td>rank 1</td><td>rank 2</td><td>rank 3</td></tr>
+      <tr><td>[0, 2^54)</td><td>[2^54, 2^55)</td><td>[2^55, 3·2^54)</td><td>[3·2^54, 2^56]</td></tr>
+      <tr><td colspan="4" align="left">Cada proceso recorre su bloque en orden. El tiempo depende de cuántas llaves<br/>tiene que probar el dueño del bloque antes de llegar a la correcta.</td></tr>
+    </table>>];
+  rango -> reparto [style=dashed, color="#2e7d4f", constraint=false];
+}
