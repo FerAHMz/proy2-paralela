@@ -69,3 +69,20 @@ python3 -B bench/medir.py --llaves 19 127 --procesos 1 2 4 \
 python3 -B bench/medir.py --texto otro.txt --frase 'frase presente' \
   --llaves 1000 10000 --salida /tmp/des-otro-texto
 ```
+
+## Regenerar gráficas e informe
+
+Las mediciones solo requieren la biblioteca estándar de Python. Para los documentos
+se usaron Matplotlib 3.10.8 y ReportLab 5.0.0. Se pueden instalar en un entorno virtual:
+
+```bash
+python3 -m venv /tmp/des-informe-venv
+/tmp/des-informe-venv/bin/pip install matplotlib==3.10.8 reportlab==5.0.0
+/tmp/des-informe-venv/bin/python -B bench/graficar.py
+/tmp/des-informe-venv/bin/python -B bench/informe.py
+```
+
+`graficar.py` toma `resumen.csv` y genera `resultados.md`, `tiempos.png` y `speedup.png`.
+`informe.py` reúne esa campaña, sus figuras y `docs/rendimiento/analisis.md` en
+`docs/rendimiento/informe_felipe.pdf`. El informe describe la campaña guardada de
+36 ejecuciones; al cambiar el diseño experimental también se debe actualizar el análisis.
