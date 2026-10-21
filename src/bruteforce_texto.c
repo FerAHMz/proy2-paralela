@@ -43,7 +43,7 @@ int main(int argc, char *argv[]){
 
   long range_per_node = upper / N;
   mylower = range_per_node * id;
-  myupper = range_per_node * (id+1) -1;
+  myupper = range_per_node * (id+1); // límite exclusivo, sin omitir una llave
   if(id == N-1){
     myupper = upper;
   }
@@ -68,8 +68,9 @@ int main(int argc, char *argv[]){
     }
   }
 
+  // Completar también las recepciones de los procesos distintos de cero.
+  MPI_Wait(&req, &st);
   if(id==0){
-    MPI_Wait(&req, &st);
     double t1 = MPI_Wtime();
     decrypt(found, cipher, ciphlen);
     printf("Llave = %ld\n", found);
