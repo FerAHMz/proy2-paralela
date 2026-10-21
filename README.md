@@ -1,21 +1,43 @@
-# Proyecto 2 — Búsqueda DES con MPI
+# Proyecto 2 — Búsqueda de llaves DES con MPI
 
-## Entrega de Felipe: mediciones y análisis
+CC3069 Computación Paralela y Distribuida — Universidad del Valle de Guatemala.
 
-- [Informe PDF de las tareas 6 y 7](docs/rendimiento/informe_felipe.pdf).
-- [Tabla y gráficas](docs/rendimiento/resultados.md).
-- [Análisis del impacto de la llave](docs/rendimiento/analisis.md).
-- [Script, metodología y reproducción de las mediciones](bench/README.md).
-- [Muestras originales](bench/resultados/mediciones.csv) y [promedios](bench/resultados/resumen.csv).
+Búsqueda por fuerza bruta de la llave privada DES con la que se cifró un texto, repartiendo el espacio de 2^56 llaves entre procesos MPI, y análisis de cómo la llave elegida afecta el tiempo y el speedup.
 
-Se usa el texto real del grupo, con tres repeticiones por combinación viable.
-Los casos sin medición de un proceso no tienen speedup calculado.
-El PDF corresponde a las tareas asignadas a Felipe; no sustituye las secciones teóricas del equipo.
+## Integrantes
 
-## Material del equipo
+| Integrante | Carné | Tareas |
+|---|---|---|
+| Fernando Andree Hernández Martínez | 23645 | 1–2: investigación de DES, diagrama de flujo e integración del informe |
+| Fernando José Rueda Rodas | 23748 | 3–5: compilación, texto cifrado y diagramas de las funciones |
+| Jorge Luis Felipe Aguilar | 23195 | 6–7: mediciones de tiempo y análisis del impacto de la llave |
 
-- [Investigación de DES](docs/des/des.md) y [diagrama de flujo](docs/des/diagrama.md).
-- [Compilación del programa original](docs/ejecucion/compilacion.md).
-- [Texto y cifrado](docs/ejecucion/texto_cifrado.md).
-- [Encrypt, decrypt y tryKey](docs/funciones/cifrado_trykey.md).
-- [Memcpy y strstr](docs/funciones/memcpy_strstr.md).
+## Contenido por tarea
+
+1. [Investigación de DES](docs/des/des.md)
+2. [Diagrama de flujo de DES](docs/des/diagrama.md)
+3. [Compilación y ejecución de `bruteforce.c`](docs/ejecucion/compilacion.md)
+4. [Texto de 352 palabras y su cifrado](docs/ejecucion/texto_cifrado.md)
+5. Funciones del programa: [`encrypt`/`decrypt` y `tryKey`](docs/funciones/cifrado_trykey.md), [`memcpy` y `strstr`](docs/funciones/memcpy_strstr.md)
+6. [Mediciones: tabla y gráficas](docs/rendimiento/resultados.md), con [metodología y reproducción](bench/README.md)
+7. [Análisis del impacto de la llave](docs/rendimiento/analisis.md)
+
+## Estructura
+
+```
+src/      bruteforce.c original, versión corregida (bruteforce_texto.c, des_util.h), cifrar.c y Makefile
+datos/    texto plano y texto cifrado
+bench/    script de mediciones, resultados (CSV, logs) y generación de gráficas
+docs/     documentación de cada tarea
+```
+
+## Uso rápido
+
+```bash
+cd src
+make
+./cifrar 3141592 ../datos/texto.txt ../datos/texto_cifrado.bin
+mpirun -np 4 ./bruteforce_texto ../datos/texto_cifrado.bin "computación paralela y distribuida"
+```
+
+En macOS se necesita `brew install open-mpi openssl@3`. Ver [compilacion.md](docs/ejecucion/compilacion.md).
