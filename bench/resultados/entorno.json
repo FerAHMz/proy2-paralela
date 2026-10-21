@@ -1,0 +1,234 @@
+{
+  "fecha_utc": "2026-10-21T00:19:26.228495+00:00",
+  "sistema": "macOS-26.6.2-arm64-arm-64bit",
+  "arquitectura": "arm64",
+  "cpu_logicas": 14,
+  "mpi": "mpirun (Open MPI) 5.0.11\n\nReport bugs to https://www.open-mpi.org/community/help/\n\n",
+  "compilador": "Apple clang version 21.0.0 (clang-2100.1.1.101)\nTarget: arm64-apple-darwin25.6.0\nThread model: posix\nInstalledDir: /Library/Developer/CommandLineTools/usr/bin\n",
+  "commit": "808af6eee25dae9d4ba57c18f0467095b9d10016",
+  "nota_commit": "Referencia actualizada al retirar un trailer automático de coautoría. El árbol del commit y todos los archivos medidos son idénticos; se verificaron los hashes después de la campaña.",
+  "estado_git": "",
+  "sha256": {
+    "src/bruteforce_texto.c": "43e32cea3cd0217d18dcf4dec94ea8c79d323be0d27d83e7956604d875f29603",
+    "src/des_util.h": "ff3b4af8c066ec3423cfe020d65e41059133b55e5ad649ab1f5f9c54cd7ed30b",
+    "src/compat/des_compat.c": "b9791b6fb71051d004849084d5bfea328a9507c884cb1f77b0141c7958a91767",
+    "src/Makefile": "a9fa6b96d2357f55f7a1ab20808cd2b083ae7d8047eafb88f07af00532c85a2b",
+    "src/bruteforce_texto": "4d475069fde4640c07eaf308f95373bdf71684d6b7416d902be8fff2ff105563",
+    "src/cifrar": "2d00bd23372cc02bc747e5c021cae39ae457d1ebacf8b20db5d717bcf301ea5d",
+    "bench/medir.py": "431889a1b8f13ac7d7c647d5b612adb7cf19614941b3c6a5321818bdc6c7ff6b"
+  },
+  "texto_sha256": "b8c6b998e885f3ddef1aceba19dd04d536272b4043aabc4d9d2056dc9b588d30",
+  "palabras": 352,
+  "bytes_texto": 2162,
+  "frase": "computación paralela y distribuida",
+  "semilla": 23195,
+  "repeticiones": 3,
+  "max_intentos": 4000000,
+  "timeout_s": 300,
+  "omitidos": [
+    {
+      "llave": 18014398509531984,
+      "procesos": 1,
+      "intentos_ganador": 18014398509531985,
+      "motivo": "Supera --max-intentos; no se ejecutó ni se estimó su tiempo"
+    },
+    {
+      "llave": 18014398509531984,
+      "procesos": 2,
+      "intentos_ganador": 18014398509531985,
+      "motivo": "Supera --max-intentos; no se ejecutó ni se estimó su tiempo"
+    },
+    {
+      "llave": 36028797019013968,
+      "procesos": 1,
+      "intentos_ganador": 36028797019013969,
+      "motivo": "Supera --max-intentos; no se ejecutó ni se estimó su tiempo"
+    }
+  ],
+  "orden": [
+    [
+      3141592,
+      4,
+      3
+    ],
+    [
+      50000,
+      2,
+      3
+    ],
+    [
+      500000,
+      1,
+      3
+    ],
+    [
+      500000,
+      4,
+      3
+    ],
+    [
+      36028797019013968,
+      4,
+      3
+    ],
+    [
+      500000,
+      1,
+      1
+    ],
+    [
+      3141592,
+      1,
+      2
+    ],
+    [
+      50000,
+      1,
+      2
+    ],
+    [
+      500000,
+      4,
+      1
+    ],
+    [
+      500000,
+      1,
+      2
+    ],
+    [
+      50000,
+      2,
+      1
+    ],
+    [
+      50000,
+      4,
+      1
+    ],
+    [
+      3141592,
+      1,
+      3
+    ],
+    [
+      500000,
+      2,
+      2
+    ],
+    [
+      18014398509531984,
+      4,
+      3
+    ],
+    [
+      50000,
+      2,
+      2
+    ],
+    [
+      36028797019013968,
+      4,
+      1
+    ],
+    [
+      500000,
+      4,
+      2
+    ],
+    [
+      500000,
+      2,
+      1
+    ],
+    [
+      18014398509531984,
+      4,
+      1
+    ],
+    [
+      3141592,
+      2,
+      3
+    ],
+    [
+      50000,
+      1,
+      1
+    ],
+    [
+      36028797019013968,
+      2,
+      3
+    ],
+    [
+      3141592,
+      2,
+      2
+    ],
+    [
+      50000,
+      4,
+      3
+    ],
+    [
+      36028797019013968,
+      2,
+      1
+    ],
+    [
+      50000,
+      1,
+      3
+    ],
+    [
+      3141592,
+      4,
+      1
+    ],
+    [
+      18014398509531984,
+      4,
+      2
+    ],
+    [
+      3141592,
+      1,
+      1
+    ],
+    [
+      50000,
+      4,
+      2
+    ],
+    [
+      36028797019013968,
+      4,
+      2
+    ],
+    [
+      3141592,
+      2,
+      1
+    ],
+    [
+      36028797019013968,
+      2,
+      2
+    ],
+    [
+      500000,
+      2,
+      3
+    ],
+    [
+      3141592,
+      4,
+      2
+    ]
+  ],
+  "afinidad": "--bind-to none",
+  "calentamiento": "Una búsqueda con llave 19 por cada cantidad de procesos",
+  "estado": "completo",
+  "hardware": "machdep.cpu.brand_string: Apple M4 Pro\nhw.physicalcpu: 14\nhw.memsize: 25769803776\n"
+}
