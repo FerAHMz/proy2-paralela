@@ -35,6 +35,51 @@ SSH OK
 Es decir: el demonio `sshd` está corriendo correctamente, pero **solo es
 alcanzable desde adentro del contenedor, no desde la IP de la red física**.
 
+### Evidencia definitiva: el contenedor no está en la LAN
+
+Listando las interfaces del contenedor se ve que **ninguna tiene una IP de la
+subred física `10.98.35.0/24`**:
+
+```
+root@docker-desktop:~/proy# ip addr show | grep inet
+    inet 127.0.0.1/8 scope host lo
+    inet 192.168.65.3/24 brd 192.168.65.255 scope global eth0
+    inet 192.168.65.6/32 scope global services1
+    inet 172.17.0.1/16 brd 172.17.255.255 scope global docker0
+```
+
+![Interfaces del contenedor y salida outbound funcionando](evidencia/ip_addr_outbound_rueda.png)
+
+El contenedor vive en la **subred interna de la VM de Docker** (`192.168.65.0/24`)
+y en el bridge `docker0` (`172.17.0.0/16`) — exactamente las interfaces virtuales
+contra las que advierte la sección V. Su IP real **no** es `10.98.35.74`.
+
+### Matiz: la salida (outbound) sí funciona, la entrada (inbound) no
+
+En la misma sesión, un SSH *saliente* hacia otro nodo del equipo **sí** se
+completó:
+
+```
+root@docker-desktop:~/proy# ssh 10.98.35.19 echo "prueba host networking"
+prueba host networking
+```
+
+Esto no contradice la falla, la precisa:
+
+- **Outbound (salir):** el contenedor puede alcanzar la LAN, porque la VM de
+  Docker hace NAT a través del Mac. Por eso llega a `10.98.35.19`.
+- **Inbound (entrar):** nadie puede alcanzar *este* contenedor desde la LAN, como
+  prueba el *Connection refused* a la propia IP `10.98.35.74`.
+
+MPI distribuido necesita que el **Maestro entre por SSH a cada Worker** (tráfico
+*inbound* hacia los contenedores de los workers). Ese es justo el sentido que
+está bloqueado, así que el poder salir no ayuda: el clúster no se arma.
+
+> El SSH a `10.98.35.19` funciona porque ese host tiene un `sshd` alcanzable
+> (probablemente el *Remote Login* nativo del macOS, no el del contenedor). Pero
+> los procesos MPI corren **dentro del contenedor**, que sigue siendo
+> inalcanzable, de modo que esa vía tampoco arma el clúster.
+
 ## La causa
 
 En Linux, `--network host` hace que el contenedor comparta directamente la pila
