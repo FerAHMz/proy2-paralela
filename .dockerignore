@@ -1,0 +1,9 @@
+# El build solo necesita src/ y datos/; todo lo demás infla el contexto.
+.git
+bench
+docs
+README.md
+# Binarios compilados en el host (se recompilan dentro de la imagen).
+src/bruteforce
+src/bruteforce_texto
+src/cifrar

@@ -4,11 +4,7 @@ El programa original del catedrático está en [`src/bruteforce.c`](../../src/br
 
 ## Compilación
 
-En Linux, `<rpc/des_crypt.h>` viene en glibc (o en `libtirpc` en distribuciones recientes), así que basta con:
-
-```bash
-mpicc bruteforce.c -o bruteforce
-```
+En distribuciones Linux antiguas `<rpc/des_crypt.h>` venía en glibc, así que bastaba con `mpicc bruteforce.c -o bruteforce`. En **Ubuntu 22.04** (el usado en el contenedor de la Parte 2) ya no: glibc quitó `ecb_crypt`/`des_setparity` en la 2.28 y `libtirpc` solo trae el header, no los símbolos. Por eso el `Makefile` usa la capa `compat/` con OpenSSL también en Linux (ver [docs/cluster/docker.md](../cluster/docker.md)).
 
 En macOS ese header no existe. Para no tocar el código original agregamos [`src/compat/`](../../src/compat/): un `rpc/des_crypt.h` con la misma interfaz que glibc (`ecb_crypt`, `des_setparity`, `DES_ENCRYPT`, `DES_DECRYPT`) implementado con OpenSSL. El header además renombra `encrypt`, porque en macOS `<unistd.h>` ya declara una función con ese nombre. El [`Makefile`](../../src/Makefile) detecta el sistema operativo y agrega esto solo en macOS:
 

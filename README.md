@@ -22,6 +22,11 @@ Búsqueda por fuerza bruta de la llave privada DES con la que se cifró un texto
 6. [Mediciones: tabla y gráficas](docs/rendimiento/resultados.md), con [metodología y reproducción](bench/README.md)
 7. [Análisis del impacto de la llave](docs/rendimiento/analisis.md)
 
+## Parte 2 — Clúster físico con Docker
+
+- [Validación cruzada local (texto del grupo 6)](docs/validacion/validacion.md)
+- [Entorno Docker, tabla de validaciones y despliegue del clúster](docs/cluster/docker.md)
+
 ## Estructura
 
 ```

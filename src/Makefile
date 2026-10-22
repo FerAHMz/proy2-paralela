@@ -9,6 +9,13 @@ OPENSSL ?= $(shell brew --prefix openssl@3)
 COMPAT_CFLAGS = -Icompat -I$(OPENSSL)/include
 COMPAT_SRC = compat/des_compat.c
 COMPAT_LIBS = -L$(OPENSSL)/lib -lcrypto
+else
+# Linux (contenedor Docker, Ubuntu 22.04): glibc ya no trae ecb_crypt/des_setparity
+# y libtirpc tampoco los exporta, así que se usa la misma capa compat con OpenSSL
+# que en macOS (requiere libssl-dev).
+COMPAT_CFLAGS = -Icompat
+COMPAT_SRC = compat/des_compat.c
+COMPAT_LIBS = -lcrypto
 endif
 
 all: bruteforce bruteforce_texto cifrar
