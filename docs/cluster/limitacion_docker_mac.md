@@ -132,12 +132,64 @@ ssh 10.98.35.XX echo "prueba host networking"
 > Completar las columnas con el resultado real de cada quien y adjuntar la
 > captura de cada máquina en `evidencia/`.
 
+## Prueba final: el SSH se arma, pero el plano de datos de MPI no
+
+En una segunda red (`10.100.0.0/16`) con "Enable host networking" correctamente
+aplicado, el panorama mejoró: el puerto 22 de cada contenedor **sí** resultó
+alcanzable desde la LAN (`nc -vz <ip> 22` → `succeeded`), el Maestro sincronizó
+llaves y entró por SSH a los dos Workers (`ssh <ip> hostname` → `docker-desktop`).
+El clúster quedó armado a nivel de SSH.
+
+Sin embargo, al lanzar MPI el run falló con un error de enrutamiento de ORTE:
+
+```
+root@docker-desktop:~/proy# mpirun --hostfile cluster_hosts -np 40 hostname
+--------------------------------------------------------------------------
+A process or daemon was unable to complete a TCP connection to another process:
+  Local host:    docker-desktop
+  Remote host:   docker-desktop
+--------------------------------------------------------------------------
+... an inability to create a connection back to mpirun due to a
+    lack of common network interfaces and/or no route found between them ...
+--------------------------------------------------------------------------
+ORTE does not know how to route a message to the specified daemon
+located on the indicated node:
+  my node:      docker-desktop
+  target node:  10.100.10.11
+```
+
+![mpirun: no route / lack of common network interfaces](evidencia/mpirun_no_route_orte.png)
+
+### Por qué falla exactamente
+
+`mpirun` usa SSH solo para **lanzar** el demonio `orted` en cada nodo; después,
+los `orted` deben abrir conexiones TCP directas entre sí (canales *oob* y *btl*)
+para intercambiar trabajo. Para eso cada demonio anuncia la IP de una de sus
+interfaces. Dentro de los contenedores de Docker Desktop esas interfaces son:
+
+- `eth0 = 192.168.65.3` — **idéntica en las tres máquinas**, porque todas las VMs
+  de Docker Desktop usan la misma subred interna `192.168.65.0/24`.
+- `docker0 = 172.17.0.1` — el bridge interno de Docker, también local a cada VM.
+
+Ninguna es la IP física `10.100.x.x`. Así que cuando un Worker le dice al Maestro
+"conéctate de vuelta a mí en `192.168.65.3`", esa dirección **no es enrutable**
+entre máquinas (es privada a cada VM y además colisiona), y ORTE reporta
+*no route found*. El SSH funcionaba porque Docker Desktop reenvía puertos puntuales
+del Mac hacia el contenedor, pero MPI necesita un plano de datos TCP completo sobre
+una interfaz compartida y enrutable, que Docker Desktop en macOS no provee.
+
+Es justamente el escenario que advierte la sección V: MPI intenta enrutar por las
+interfaces puente de Docker (`docker0` / la subred interna de la VM) en varias
+máquinas, y el tráfico nunca llega.
+
 ## Qué demuestra y a qué preguntas responde
 
-- **VI.1 (por qué MPI se congela):** aunque aquí el error es explícito
-  (*Connection refused*), la raíz es la misma familia de problema que el *MPI
-  hang*: OpenMPI ve interfaces que no enrutan hacia los otros nodos (las
-  virtuales de la VM de Docker) y el tráfico nunca llega al destino físico.
+- **VI.1 (por qué MPI se congela / no enruta):** el error de ORTE *"lack of
+  common network interfaces and/or no route found"* es la demostración directa.
+  OpenMPI anuncia las interfaces virtuales de la VM de Docker (`192.168.65.x`,
+  `docker0`), que no enrutan hacia los otros nodos físicos; sin los `--mca
+  ..._tcp_if_include` apuntando a una interfaz física compartida —que aquí no
+  existe dentro del contenedor— el tráfico nunca llega.
 - **VI.2 (problemas de red enfrentados):** el aislamiento de red de Docker
   Desktop en macOS/Windows, que no publica el contenedor en la LAN aun con host
   networking activado.
