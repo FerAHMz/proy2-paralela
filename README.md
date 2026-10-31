@@ -27,6 +27,7 @@ Búsqueda por fuerza bruta de la llave privada DES con la que se cifró un texto
 - [Validación cruzada local (texto del grupo 6)](docs/validacion/validacion.md)
 - [Entorno Docker, tabla de validaciones y despliegue del clúster](docs/cluster/docker.md)
 - [Troubleshooting: Docker Desktop en macOS no expone el contenedor en la LAN](docs/cluster/limitacion_docker_mac.md)
+- [Clúster distribuido con Docker + Tailscale (funciona entre redes distintas)](docs/cluster/tailscale.md)
 
 ## Estructura
 
